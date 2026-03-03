@@ -1,7 +1,6 @@
 # PANW_Assessment
 
 Hybrid exact + vector RAG system for structured network IP intelligence, combining deterministic lookup with FAISS-based semantic retrieval and grounded LLM answering.
-
 ---
 
 ## Hybrid RAG System for Network IP Intelligence
@@ -25,7 +24,7 @@ The pipeline consists of:
 5. **FAISS vector indexing**
 6. **Hybrid retrieval** (Exact → Vector fallback)
 7. **LLM-based answer generation**
-8. **Evaluation against baseline**
+8. **Zero-shot vs RAG evaluation comparison**
 
 This design balances **deterministic precision** with **semantic flexibility**.
 
@@ -46,7 +45,7 @@ A synthetic **"Project Omega"** record is inserted at index `0` as required.
 Each record is normalized into a structured text format:
 
 ```
-service: <value> | prefix: <value> | region: <value> | network_border_group: <value>
+service: <value> | ip_prefix: <value> | region: <value> | network_border_group: <value>
 ```
 
 This ensures:
@@ -59,7 +58,7 @@ This ensures:
 
 | Property   | Value                    |
 |-----------|---------------------------|
-| **Model** | `sentence-transformers`  |
+| **Model** | all-MiniLM-L6-v2 `sentence-transformers`  |
 | **Purpose** | Enable semantic matching for natural language queries |
 | **Why**   | Structured identifiers alone are insufficient for fuzzy queries |
 
@@ -77,11 +76,13 @@ The system uses a **two-stage retrieval** process:
 
 ### Stage 1: Exact Structured Match (Deterministic)
 
-If structured constraints are detected (e.g., service name, CIDR, region):
+If structured constraints are detected (e.g., service name, IP prefix, region):
 
 - Pre-built inverted indexes are queried
+- Regex-based constraint extraction is performed.
 - Matching candidates are intersected
 - Result returned with **score = 1.0**
+- Retrieval method labeled "EXACT_AND"
 
 **Why:** Network identifiers require deterministic handling. Embeddings alone are unreliable for structured tokens such as service names or CIDR prefixes.
 
@@ -92,6 +93,7 @@ If no exact match is found:
 - Query is embedded
 - FAISS returns top-1 by similarity
 - Embedding score is returned
+- Retrieval method labeled "VECTOR"
 
 **Why:** Handles schema mismatch and natural language variation, e.g.:
 
@@ -160,8 +162,10 @@ For production-scale datasets consider:
 
 - FAISS **IVF** / **HNSW** indexes
 - Managed vector databases
-- Structured fields indexed in SQL / Elastic
+- Hybrid SQL + vector search
 - **Longest-prefix matching** for CIDR containment
+- Re-ranking layer (cross-encoder)
+- Query result caching
 
 ### Deterministic Network Logic
 
@@ -169,8 +173,20 @@ In production systems, CIDR containment checks should use:
 
 - Longest-prefix match
 - `ipaddress` module for subnet inclusion
+- Support hierarchical prefix resolution
 
 > This assignment version keeps string-based matching for simplicity.
+
+### Ambiguity Handling
+
+Currently:
+
+Exact match returns the first intersected candidate.
+
+In production:
+
+- Multiple matches should trigger clarification or ranking logic.
+- Confidence scoring should combine constraint strength + semantic score.
 
 ### IPv6 Support
 
