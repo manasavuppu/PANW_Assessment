@@ -13,7 +13,7 @@ Network infrastructure data contains highly structured identifiers such as:
 - **Regions**
 - **Network border groups**
 
-Pure semantic retrieval is unreliable for these identifiers. This system therefore **prioritizes deterministic matching first**, and only uses semantic retrieval when no structured constraints are present.
+Pure semantic retrieval is unreliable for these identifiers. This system therefore **prioritizes deterministic matching first**, restricts semantic retrieval to queries that do not contain structured constraints.
 
 The result is a hybrid architecture that provides both:
 
@@ -179,7 +179,7 @@ The retrieved chunk is passed to a **local language model**. The prompt instruct
 - Answer **only** using the provided context
 - Return **"I don't know"** when the answer is absent
 
-Generation is **deterministic** (`do_sample=False`) to ensure consistent evaluation. Post-processing extracts the IP address from the generated response.
+Generation is **deterministic** (`do_sample=False`) to ensure consistent evaluation. The prompt enforces grounded answers and deterministic generation (do_sample=False) to minimize hallucination and ensure consistent evaluation.
 
 ---
 
