@@ -179,7 +179,7 @@ The retrieved chunk is passed to a **local language model**. The prompt instruct
 - Answer **only** using the provided context
 - Return **"I don't know"** when the answer is absent
 
-Generation is **deterministic** (`do_sample=False`) to ensure consistent evaluation. The prompt enforces grounded answers and deterministic generation (do_sample=False) to minimize hallucination and ensure consistent evaluation.
+Generation is **deterministic**. The prompt enforces grounded answers and deterministic generation (do_sample=False) to minimize hallucination and ensure consistent evaluation.
 
 ---
 
